@@ -3,6 +3,7 @@ const router = express.Router();
 const Booking = require('../models/Booking');
 const Experience = require('../models/Experience');
 const shortid = require('shortid');
+const { sendBookingEmail } = require('../utils/mailer');
 
 // POST /api/bookings - Create a booking (prevents double-booking)
 router.post('/', async (req, res) => {
@@ -83,6 +84,21 @@ router.post('/', async (req, res) => {
     });
 
     await booking.save();
+
+    // Send confirmation email (best-effort)
+    try {
+      await sendBookingEmail({
+        to: email,
+        refId: booking.refId,
+        experience: updatedExp.title,
+        date,
+        time,
+        qty,
+        total
+      });
+    } catch (mailErr) {
+      console.error('Email send failed:', mailErr?.message || mailErr);
+    }
 
     res.json({ 
       success: true, 

@@ -1,0 +1,23 @@
+# Node
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+backend/dist/
+frontend/dist/
+
+# Env files
+.env
+backend/.env
+frontend/.env
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.vercel/

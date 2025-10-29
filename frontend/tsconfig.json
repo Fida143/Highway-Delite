@@ -1,5 +1,6 @@
 {
   
+  "include": ["src", "vite.config.ts"],
   "compilerOptions": {
     "jsx": "react-jsx"
   },

@@ -6,7 +6,7 @@ const Promo = require('../models/Promo');
 // Connect to database
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bookit';
+    const uri = process.env.MONGO_URI || 'mongodb+srv://fidahussain:7563821444FIda@cluster0.dweg55n.mongodb.net/bookit?retryWrites=true&w=majority';
     await mongoose.connect(uri, { 
       useNewUrlParser: true, 
       useUnifiedTopology: true 
@@ -36,7 +36,7 @@ const generateTimeSlots = () => {
     { time: '07:00', capacity: 4 },
     { time: '09:00', capacity: 2 },
     { time: '11:00', capacity: 5 },
-    { time: '13:00', capacity: 0 }, // Sold out
+    { time: '13:00', capacity: 3 }, // was 0 (always sold out)
     { time: '15:00', capacity: 3 },
     { time: '17:00', capacity: 2 }
   ];

@@ -27,11 +27,22 @@ const SlotPicker: React.FC<{
 }> = ({ slots, selectedDate, selectedTime, onDateSelect, onTimeSelect }) => {
   // Get unique dates
   const dates = [...new Set(slots.map(slot => slot.date))].sort();
-  
-  // Get slots for selected date
-  const timeSlots = slots
+
+  // Build a map for quick lookup of capacities by time for selected date
+  const capacityByTime: Record<string, number> = {};
+  slots
     .filter(slot => slot.date === selectedDate)
-    .sort((a, b) => a.time.localeCompare(b.time));
+    .forEach(slot => {
+      capacityByTime[slot.time] = slot.capacity;
+    });
+
+  // Fixed schedule to always display, mark missing as sold out
+  const allTimes = ['07:00','09:00','11:00','13:00','15:00','17:00'];
+
+  const timeSlots = allTimes.map(t => ({
+    time: t,
+    capacity: capacityByTime[t] ?? 0,
+  }));
 
   return (
     <div className="space-y-6">
@@ -43,7 +54,7 @@ const SlotPicker: React.FC<{
             const dateObj = new Date(date);
             const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
             const day = dateObj.getDate();
-            
+
             return (
               <button
                 key={date}
@@ -68,7 +79,7 @@ const SlotPicker: React.FC<{
           {timeSlots.map((slot) => {
             const isAvailable = slot.capacity > 0;
             const isSelected = selectedTime === slot.time;
-            
+
             return (
               <button
                 key={slot.time}
@@ -117,13 +128,13 @@ const PriceSummary: React.FC<{
   return (
     <div className="bg-gray-50 rounded-lg p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Price Summary</h3>
-      
+
       <div className="space-y-3 mb-4">
         <div className="flex justify-between">
           <span className="text-gray-600">Starts at</span>
           <span className="font-semibold">₹{experience.price}</span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <span className="text-gray-600">Quantity</span>
           <div className="flex items-center space-x-2">
@@ -142,25 +153,25 @@ const PriceSummary: React.FC<{
             </button>
           </div>
         </div>
-        
+
         <div className="flex justify-between">
           <span className="text-gray-600">Subtotal</span>
           <span className="font-semibold">₹{subtotal}</span>
         </div>
-        
+
         <div className="flex justify-between">
           <span className="text-gray-600">Taxes</span>
           <span className="font-semibold">₹{taxes}</span>
         </div>
-        
+
         <hr className="border-gray-300" />
-        
+
         <div className="flex justify-between text-lg">
           <span className="font-semibold">Total</span>
           <span className="font-bold">₹{total}</span>
         </div>
       </div>
-      
+
       <button
         onClick={onConfirm}
         className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
@@ -174,7 +185,7 @@ const PriceSummary: React.FC<{
 const Details: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const [experience, setExperience] = useState<Experience | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -183,31 +194,30 @@ const Details: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-  const fetchExperience = async () => {
-    if (!id) return;
-    
-    try {
-      setLoading(true);
-      const response = await api.get(`/experiences/${id}`);
-      const exp = response.data;
-      setExperience(exp);
-      
-      // Set default date to first available date
-      if (exp.slots && exp.slots.length > 0) {
-        const dates = [...new Set<string>(exp.slots.map((slot: Slot) => slot.date))].sort();
-        setSelectedDate(dates[0]);
+    const fetchExperience = async () => {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        const response = await api.get(`/experiences/${id}`);
+        const exp = response.data;
+        setExperience(exp);
+
+        // Set default date to first available date
+        if (exp.slots && exp.slots.length > 0) {
+          const dates = [...new Set(exp.slots.map((slot: Slot) => slot.date))].sort();
+          setSelectedDate(dates[0]);
+        }
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to fetch experience details');
+        console.error('Error fetching experience:', err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch experience details');
-      console.error('Error fetching experience:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchExperience();
-}, [id]);
-
+    fetchExperience();
+  }, [id]);
 
   const handleConfirm = () => {
     if (!experience || !selectedDate || !selectedTime) {
@@ -283,11 +293,11 @@ const Details: React.FC = () => {
             alt={experience.title}
             className="w-full h-96 object-cover rounded-lg mb-6"
           />
-          
+
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             {experience.title}
           </h1>
-          
+
           <p className="text-gray-600 mb-6">
             {experience.description}
           </p>

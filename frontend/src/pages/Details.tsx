@@ -183,30 +183,31 @@ const Details: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    const fetchExperience = async () => {
-      if (!id) return;
+  const fetchExperience = async () => {
+    if (!id) return;
+    
+    try {
+      setLoading(true);
+      const response = await api.get(`/experiences/${id}`);
+      const exp = response.data;
+      setExperience(exp);
       
-      try {
-        setLoading(true);
-        const response = await api.get(`/experiences/${id}`);
-        const exp = response.data;
-        setExperience(exp);
-        
-        // Set default date to first available date
-        if (exp.slots && exp.slots.length > 0) {
-          const dates = [...new Set(exp.slots.map((slot: Slot) => slot.date))].sort();
-          setSelectedDate(dates[0]);
-        }
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to fetch experience details');
-        console.error('Error fetching experience:', err);
-      } finally {
-        setLoading(false);
+      // Set default date to first available date
+      if (exp.slots && exp.slots.length > 0) {
+        const dates = [...new Set<string>(exp.slots.map((slot: Slot) => slot.date))].sort();
+        setSelectedDate(dates[0]);
       }
-    };
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to fetch experience details');
+      console.error('Error fetching experience:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchExperience();
-  }, [id]);
+  fetchExperience();
+}, [id]);
+
 
   const handleConfirm = () => {
     if (!experience || !selectedDate || !selectedTime) {

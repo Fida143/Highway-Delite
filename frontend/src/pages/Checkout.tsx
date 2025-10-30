@@ -318,7 +318,7 @@ const Checkout: React.FC = () => {
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-sm"
           >
             {isSubmitting ? 'Processing...' : 'Pay and Confirm'}
           </button>
